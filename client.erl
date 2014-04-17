@@ -1,11 +1,29 @@
 -module(client).
 
--export([messageToServer/1,
-        list_waiting_matches/0,
-        create_match/1,
-        connect_to_match/1,
-        list_playing_matches/0
+-export([new/0
     ]).
+
+new() -> 
+    spawn(fun() -> client_loop() end).
+
+client_loop() ->
+    receive
+        {messageToServer, Message} -> 
+            messageToServer(Message),
+            client_loop();
+        {list_waiting_matches} -> 
+            list_waiting_matches(),
+            client_loop();
+        {list_playing_matches} ->
+            list_playing_matches(),
+            client_loop();
+        {create_match, Name} ->
+            create_match(Name),
+            client_loop();
+        {connect_to_match, Name} ->
+            connect_to_match(Name),
+            client_loop()
+    end.
 
 messageToServer(Message) ->
     server ! {self(), message, Message},
